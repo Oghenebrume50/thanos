@@ -43,6 +43,7 @@ import (
 	"github.com/thanos-io/thanos/pkg/runutil"
 	httpserver "github.com/thanos-io/thanos/pkg/server/http"
 	"github.com/thanos-io/thanos/pkg/ui"
+	"github.com/thanos-io/thanos/pkg/ui/config"
 )
 
 var (
@@ -199,6 +200,11 @@ func runCompact(
 		return err
 	}
 
+	confContentYamlStr, err := config.ConcealSecret(confContentYaml)
+	if err != nil {
+		return err
+	}
+
 	bkt, err := client.NewBucket(logger, confContentYaml, reg, component.String())
 	if err != nil {
 		return err
@@ -212,6 +218,12 @@ func runCompact(
 	relabelConfig, err := block.ParseRelabelConfig(relabelContentYaml, block.SelectorSupportedRelabelActions)
 	if err != nil {
 		return err
+	}
+
+	// Add config content to configs map.
+	configFilesMap := map[string]string{
+		"Object Store Configuration":     string(confContentYamlStr),
+		"Selector Relable Configuration": string(relabelContentYaml),
 	}
 
 	// Ensure we close up everything properly.
@@ -256,7 +268,7 @@ func runCompact(
 			"/loaded",
 			component,
 		)
-		api = blocksAPI.NewBlocksAPI(logger, conf.webConf.disableCORS, conf.label, flagsMap)
+		api = blocksAPI.NewBlocksAPI(logger, conf.webConf.disableCORS, conf.label, flagsMap, configFilesMap)
 		sy  *compact.Syncer
 	)
 	{

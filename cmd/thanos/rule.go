@@ -59,6 +59,7 @@ import (
 	"github.com/thanos-io/thanos/pkg/tls"
 	"github.com/thanos-io/thanos/pkg/tracing"
 	"github.com/thanos-io/thanos/pkg/ui"
+	"github.com/thanos-io/thanos/pkg/ui/config"
 )
 
 type ruleConfig struct {
@@ -536,6 +537,23 @@ func runRule(
 			s.Shutdown(err)
 		})
 	}
+
+	confContentYaml, err := conf.objStoreConfig.Content()
+	if err != nil {
+		return err
+	}
+
+	confContentYamlStr, err := config.ConcealSecret(confContentYaml)
+	if err != nil {
+		return err
+	}
+
+	configFilesMap := map[string]string{
+		"Query Config":          string(conf.queryConfigYAML),
+		"Alert Managers Config": string(conf.alertmgrsConfigYAML),
+		"Object Storage Config": string(confContentYamlStr),
+	}
+
 	// Start UI & metrics HTTP server.
 	{
 		router := route.New()
@@ -567,7 +585,7 @@ func runRule(
 		// TODO(bplotka in PR #513 review): pass all flags, not only the flags needed by prefix rewriting.
 		ui.NewRuleUI(logger, reg, ruleMgr, conf.alertQueryURL.String(), conf.web.externalPrefix, conf.web.prefixHeaderName).Register(router, ins)
 
-		api := v1.NewRuleAPI(logger, reg, thanosrules.NewGRPCClient(ruleMgr), ruleMgr, conf.web.disableCORS, flagsMap)
+		api := v1.NewRuleAPI(logger, reg, thanosrules.NewGRPCClient(ruleMgr), ruleMgr, conf.web.disableCORS, flagsMap, configFilesMap)
 		api.Register(router.WithPrefix("/api/v1"), tracer, logger, ins, logMiddleware)
 
 		srv := httpserver.New(logger, reg, comp, httpProbe,
@@ -587,11 +605,6 @@ func runRule(
 
 			srv.Shutdown(err)
 		})
-	}
-
-	confContentYaml, err := conf.objStoreConfig.Content()
-	if err != nil {
-		return err
 	}
 
 	if len(confContentYaml) > 0 {

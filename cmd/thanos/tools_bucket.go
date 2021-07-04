@@ -53,6 +53,7 @@ import (
 	"github.com/thanos-io/thanos/pkg/runutil"
 	httpserver "github.com/thanos-io/thanos/pkg/server/http"
 	"github.com/thanos-io/thanos/pkg/ui"
+	"github.com/thanos-io/thanos/pkg/ui/config"
 	"github.com/thanos-io/thanos/pkg/verifier"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -376,9 +377,22 @@ func registerBucketWeb(app extkingpin.AppClause, objStoreConfig *extflag.PathOrC
 		bucketUI := ui.NewBucketUI(logger, *label, *webExternalPrefix, *webPrefixHeaderName, "", component.Bucket)
 		bucketUI.Register(router, true, ins)
 
+		confContentYaml, err := objStoreConfig.Content()
+		if err != nil {
+			return err
+		}
+
+		confContentYamlStr, err := config.ConcealSecret(confContentYaml)
+		if err != nil {
+			return err
+		}
+
+		var configFilesMap = make(map[string]string)
+		configFilesMap["Object Storage Configuration"] = string(confContentYamlStr)
+
 		flagsMap := getFlagsMap(cmd.Flags())
 
-		api := v1.NewBlocksAPI(logger, *webDisableCORS, *label, flagsMap)
+		api := v1.NewBlocksAPI(logger, *webDisableCORS, *label, flagsMap, configFilesMap)
 
 		// Configure Request Logging for HTTP calls.
 		opts := []logging.Option{logging.WithDecider(func(_ string, _ error) logging.Decision {
@@ -400,11 +414,6 @@ func registerBucketWeb(app extkingpin.AppClause, objStoreConfig *extflag.PathOrC
 
 		if *interval < (*timeout * 2) {
 			level.Warn(logger).Log("msg", "Refresh interval should be at least 2 times the timeout")
-		}
-
-		confContentYaml, err := objStoreConfig.Content()
-		if err != nil {
-			return err
 		}
 
 		bkt, err := client.NewBucket(logger, confContentYaml, reg, component.Bucket.String())
