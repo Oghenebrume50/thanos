@@ -8,6 +8,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/alecthomas/units v0.0.0-20210208195552-ff826a37aa15
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.4+incompatible
+	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/blang/semver/v4 v4.0.0
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b
 	github.com/cespare/xxhash v1.1.0
@@ -49,10 +50,10 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/prometheus/alertmanager v0.21.1-0.20210422101724-8176f78a70e1
+	github.com/prometheus/alertmanager v0.22.1-0.20210603124511-8b584eb2265e
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.23.0
+	github.com/prometheus/common v0.26.1-0.20210603143733-6ef301f414bf
 	github.com/prometheus/exporter-toolkit v0.5.1
 	github.com/prometheus/prometheus v1.8.2-0.20210519120135-d95b0972505f
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
@@ -64,7 +65,7 @@ require (
 	go.uber.org/automaxprocs v1.2.0
 	go.uber.org/goleak v1.1.10
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/text v0.3.6
 	google.golang.org/api v0.46.0
@@ -80,6 +81,8 @@ replace (
 	// Using a 3rd-party branch for custom dialer - see https://github.com/bradfitz/gomemcache/pull/86.
 	// Required by Cortex https://github.com/cortexproject/cortex/pull/3051.
 	github.com/bradfitz/gomemcache => github.com/themihai/gomemcache v0.0.0-20180902122335-24332e2d58ab
+
+	github.com/cortexproject/cortex => github.com/Oghenebrume50/cortex v1.9.1-0.20210706224631-f9f53a575092
 	// Update to v1.1.1 to make sure windows CI pass.
 	github.com/elastic/go-sysinfo => github.com/elastic/go-sysinfo v1.1.1
 
